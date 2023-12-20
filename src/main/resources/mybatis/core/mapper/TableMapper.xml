@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.qinjinhui.paymentcredit.core.mapper.TableMapper">
+
+    <!--创建表的 SQL 语句-->
+    <update id="createTable">
+        CREATE TABLE `${tableName}`
+        (
+        ${creditSql}
+            PRIMARY KEY (${isPrimary})
+        ) ENGINE = InnoDB  AUTO_INCREMENT = 9
+          CHARACTER SET = utf8mb4 COMMENT =${tableExplain};
+    </update>
+
+</mapper>
+
