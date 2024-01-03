@@ -6,6 +6,7 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.qinjinhui.paymentcredit.core.baseFrom.BaseFrom;
 import com.qinjinhui.paymentcredit.dao.PayAccount;
 import com.qinjinhui.paymentcredit.entity.Person;
@@ -14,7 +15,6 @@ import com.qinjinhui.paymentcredit.service.TestServiceImpl;
 import com.qinjinhui.paymentcredit.utils.Color;
 import com.qinjinhui.paymentcredit.utils.GenerateTableUtils;
 import com.qinjinhui.paymentcredit.utils.Java8future;
-import com.qinjinhui.paymentcredit.utils.LamdbaUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -158,7 +157,7 @@ class PaymentCreditApplicationTests {
         objects.add("C");
         objects.add("D");
         objects.add("A_C");
-        HashMap<String, Integer> objectObjectHashMap = Maps.newHashMap();
+        HashMap<Object, Object> objectObjectHashMap = Maps.newHashMap();
         objectObjectHashMap.put("D", 1);
         objectObjectHashMap.put("HL_C", 2);
         objectObjectHashMap.put("HL_H", 3);
@@ -616,14 +615,61 @@ class PaymentCreditApplicationTests {
         System.out.println(bu);
     }
 
+//    public static void main(String[] args) {
+//        BaseFrom bu = BaseFrom.builder().token("第一次").build();
+//        System.out.println(bu);
+//        bu.setToken1("第二次添加");
+//        System.out.println(bu);
+//        bu.builder().token1("第三次").build();
+//        System.out.println(bu);
+//    }
+
+
+
+
+//        public static void main(String[] args) {
+//            MyObject obj1 = new MyObject(Arrays.asList("a", "b", "c"));
+//            MyObject obj2 = new MyObject(null);
+//            MyObject obj3 = null;
+//
+//            Set<String> result1 = processObject(obj1);
+//            Set<String> result2 = processObject(obj2);
+//            Set<String> result3 = processObject(obj3);
+//
+//            System.out.println("Result 1: " + result1);
+//            System.out.println("Result 2: " + result2);
+//            System.out.println("Result 3: " + result3);
+//        }
+
     public static void main(String[] args) {
-        BaseFrom bu = BaseFrom.builder().token("第一次").build();
-        System.out.println(bu);
-        bu.setToken1("第二次添加");
-        System.out.println(bu);
-        bu.builder().token1("第三次").build();
-        System.out.println(bu);
+        List<String> list = Arrays.asList("00","01", "02", null);
+        Set<String> setA= Sets.newHashSet();
+        setA.add("00");
+        setA.add(null);
+        System.out.println("set"+ setA);
+        setA.removeAll(list);
+        System.out.println("set"+ setA);
+
     }
+        public static Set<String> processObject(MyObject myObject) {
+            return Optional.ofNullable(myObject)
+                    .map(MyObject::getSomeList)
+                    .map(someList -> someList.stream().collect(Collectors.toSet()))
+                    .orElse(Collections.emptySet());
+        }
+
+    static class MyObject {
+        private List<String> someList;
+
+        public MyObject(List<String> someList) {
+            this.someList = someList;
+        }
+
+        public List<String> getSomeList() {
+            return someList;
+        }
+    }
+
 
 
 }
