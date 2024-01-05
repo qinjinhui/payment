@@ -11,6 +11,7 @@ import com.qinjinhui.paymentcredit.core.baseFrom.BaseFrom;
 import com.qinjinhui.paymentcredit.dao.PayAccount;
 import com.qinjinhui.paymentcredit.entity.Person;
 import com.qinjinhui.paymentcredit.entity.Person1;
+import com.qinjinhui.paymentcredit.service.ExcelImpl;
 import com.qinjinhui.paymentcredit.service.TestServiceImpl;
 import com.qinjinhui.paymentcredit.utils.Color;
 import com.qinjinhui.paymentcredit.utils.GenerateTableUtils;
@@ -668,6 +669,15 @@ class PaymentCreditApplicationTests {
         public List<String> getSomeList() {
             return someList;
         }
+    }
+
+
+    @Autowired
+    ExcelImpl excel;
+
+    @Test
+    public void excelImplTest(){
+        excel.tttt();
     }
 
 
