@@ -1,28 +1,27 @@
 package com.qinjinhui.paymentcredit.controller;
 
 
-import com.qinjinhui.paymentcredit.annotations.ApiController;
 import com.qinjinhui.paymentcredit.core.baseFrom.BaseFrom;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Controller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.logging.Logger;
 
 
-@Controller
-@Slf4j
+@RestController
 @RequestMapping(value = "/v1/aaa")
 public class TestController implements testInfate{
-//    private static Logger logger= Logger.getLogger(TestController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestController.class);
 
+    @RequestMapping("/v1/contro")
     public void ControllerTest(BaseFrom BaseFrom){
-        log.info("访问Controller");
-
+        LOGGER.info("访问Controlller-----");
     }
 
     @Override
     public String aa() {
-        return null;
+        return "";
     }
 }

@@ -1,6 +1,7 @@
 package com.qinjinhui.paymentcredit.utils;
 
 import com.google.common.collect.Maps;
+import com.qinjinhui.paymentcredit.iserver.ChunkedFileImporter;
 import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,11 +21,15 @@ import java.util.stream.IntStream;
  * @Describe 分片导入
  **/
 @Slf4j
-public abstract class AbstractChunkedFileImporter {
+public abstract class AbstractChunkedFileImporter implements ChunkedFileImporter {
     private static final int DEFAULT_SLICE_SIZE = 2;
     private static final int DEFAULT_THREAD_POOL_SIZE = 3;
 
-    public AbstractChunkedFileImporter() {
+    /**
+     * 此接口暂时不用，对子类不暴露调用入口，统一暴露给底层，后续扩展
+     */
+    @Deprecated
+    protected   void execute(){
         executeFileImport();
     }
 

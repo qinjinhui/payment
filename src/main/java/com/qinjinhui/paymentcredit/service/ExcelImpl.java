@@ -24,6 +24,7 @@ public class ExcelImpl extends AbstractChunkedFileImporter {
     }
 
     public void tttt(){
+        execute();
     }
 
 }
