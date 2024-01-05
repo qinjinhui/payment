@@ -13,6 +13,7 @@ import com.qinjinhui.paymentcredit.entity.Person;
 import com.qinjinhui.paymentcredit.entity.Person1;
 import com.qinjinhui.paymentcredit.service.ExcelImpl;
 import com.qinjinhui.paymentcredit.service.TestServiceImpl;
+import com.qinjinhui.paymentcredit.utils.ApplicationContextUtil;
 import com.qinjinhui.paymentcredit.utils.Color;
 import com.qinjinhui.paymentcredit.utils.GenerateTableUtils;
 import com.qinjinhui.paymentcredit.utils.Java8future;
@@ -672,11 +673,10 @@ class PaymentCreditApplicationTests {
     }
 
 
-    @Autowired
-    ExcelImpl excel;
 
     @Test
     public void excelImplTest(){
+        ExcelImpl excel = ApplicationContextUtil.getBean(ExcelImpl.class);
         excel.tttt();
     }
 

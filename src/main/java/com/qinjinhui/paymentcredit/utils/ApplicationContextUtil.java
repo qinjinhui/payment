@@ -47,9 +47,7 @@ public class ApplicationContextUtil implements ApplicationContextAware {
      * @param <T>
      * @return
      */
-    Map<Object,PayAccount> accountMap=new HashMap();
     public  static <T> T getBean(Class<T> clazz){
-        Map<String, PayAccount> beansOfType = getApplicationContext().getBeansOfType(PayAccount.class);
         return getApplicationContext().getBean(clazz);
     }
 
