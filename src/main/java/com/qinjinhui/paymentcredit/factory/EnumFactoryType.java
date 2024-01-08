@@ -12,7 +12,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum EnumFactoryType {
 
-    XXX("","");
+    STANDARD_LOGIN("standard$login","登录执行器");
     private String code;
     private String name;
 }

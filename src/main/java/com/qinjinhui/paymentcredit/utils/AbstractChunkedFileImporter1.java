@@ -1,15 +1,22 @@
 package com.qinjinhui.paymentcredit.utils;
 
+import com.google.common.collect.Maps;
 import com.qinjinhui.paymentcredit.iserver.ChunkedFileImporter;
 import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.annotation.Async;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
@@ -20,10 +27,10 @@ import java.util.stream.IntStream;
 /**
  * @Author qinjinhui
  * @Date 2023/4/22
- * @Describe 抽象类分片导入
+ * @Describe 分片导入
  **/
 @Slf4j
-public abstract class AbstractChunkedFileImporter implements ChunkedFileImporter {
+public abstract class AbstractChunkedFileImporter1 implements ChunkedFileImporter {
     private static final int DEFAULT_SLICE_SIZE = 2;
     private static final int DEFAULT_THREAD_POOL_SIZE = 3;
 
@@ -31,7 +38,9 @@ public abstract class AbstractChunkedFileImporter implements ChunkedFileImporter
 
     private final Lock importFileSliceLock = new ReentrantLock();
 
-    private final ExecutorService executorService;
+    @Autowired
+    @Qualifier("fileImportTaskExecutor")
+    private Executor fileImportTaskExecutor;
 
     /**
      * 此接口暂时不用，对子类不暴露调用入口，统一暴露给底层，后续扩展
@@ -41,30 +50,37 @@ public abstract class AbstractChunkedFileImporter implements ChunkedFileImporter
         executeFileImport();
     }
 
-    public AbstractChunkedFileImporter(ExecutorService executorService) {
-        this.executorService = executorService;
-    }
-
+    @Async
     public void executeFileImport() {
             try {
                 FileCheckUtils.checkFileExists(getSourceFilePath());
                 prepareFile();
                 List<Pair<Integer, Integer>> indexRanges = splitIntoIndexRanges();
 
-               // CountDownLatch countDownLatch = new CountDownLatch(DEFAULT_THREAD_POOL_SIZE);
+                ExecutorService executorService = Executors.newFixedThreadPool(DEFAULT_THREAD_POOL_SIZE);
 
-                List<CompletableFuture<Void>> futures = indexRanges.stream()
-                        .map(pair -> CompletableFuture.runAsync(() -> processIndex(pair), executorService))
-                        .collect(Collectors.toList());
+                 Map<String, Boolean> processedIndices = Maps.newConcurrentMap();
+                for (int i = 0; i < DEFAULT_THREAD_POOL_SIZE; i++) {
+                    executorService.submit(() -> {
+                        int size = indexRanges.size();
+                        while (processedIndices.size() < size) {
+                            int index = ThreadLocalRandom.current().nextInt(size);
+                            Pair<Integer, Integer> pair = indexRanges.get(index);
+                            processedIndices.computeIfAbsent(pair.getKey().toString(), key -> {
+                                log.info(" {} processing {} ", Thread.currentThread().getName(), pair);
+                                try {
+                                    processDataInRange(pair.getKey(), pair.getValue());
+                                } catch (IOException e) {
+                                    log.error(e.getMessage());
+                                }
+                                return true;
+                            });
+                        }
+                    });
+                }
 
-                CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-                allOf.whenComplete((result,throwable)-> {
-                    // 在任务完成后进行一些操作  TODO: throwable可以增加异常处理机制
-                    executorService.shutdown();
-                 //   countDownLatch.countDown();
-                });
-             //   countDownLatch.await();
-                allOf.join();
+                executorService.shutdown();
+                executorService.awaitTermination(1, TimeUnit.MINUTES);
             } catch (Exception e) {
                log.error(e.getMessage());
             }
@@ -106,6 +122,28 @@ public abstract class AbstractChunkedFileImporter implements ChunkedFileImporter
                 .collect(Collectors.toList());
     }
 
+
+    private void submitTasks(ExecutorService executorService, List<Pair<Integer, Integer>> indexRanges, Map<String, Boolean> processedIndices) {
+        for (int i = 0; i < DEFAULT_THREAD_POOL_SIZE; i++) {
+            executorService.submit(() -> {
+                int size = indexRanges.size();
+                while (processedIndices.size() < size) {
+                    int index = ThreadLocalRandom.current().nextInt(size);
+                    Pair<Integer, Integer> pair = indexRanges.get(index);
+                    processedIndices.computeIfAbsent(pair.getKey().toString(), key -> {
+                        log.info(" {} processing {} ", Thread.currentThread().getName(), pair);
+                        try {
+                            processDataInRange(pair.getKey(), pair.getValue());
+                        } catch (IOException e) {
+                            log.error(e.getMessage());
+                        }
+                        return true;
+                    });
+                }
+            });
+        }
+    }
+
     public int getImportFileSlice() {
         return importFileSlice.get();
     }
@@ -120,17 +158,18 @@ public abstract class AbstractChunkedFileImporter implements ChunkedFileImporter
     }
 
     protected void processDataInRange(int startLine, int endLine) throws IOException {
-        File file = new File(getSourceFilePath());
-        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
-            raf.seek(getLineStartPosition(file, startLine));
-
-            List<String> dataList = new CopyOnWriteArrayList<>();
-            String line;
-            while ((line = raf.readLine()) != null && getLineNumber(line) <= endLine) {
-                dataList.add(new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
-            }
-            processData(dataList);
-        }
+//        File file = new File(getSourceFilePath());
+//        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+//            raf.seek(getLineStartPosition(file, startLine));
+//
+//            List<String> dataList = new CopyOnWriteArrayList<>();
+//            String line;
+//            while ((line = raf.readLine()) != null && getLineNumber(line) <= endLine) {
+//                dataList.add(new String(line.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
+//            }
+//
+//            processData(dataList);
+//        }
     }
 
     protected long getLineStartPosition(File file, int lineNumber) throws IOException {

@@ -28,10 +28,10 @@ public abstract class AbstractBusinessHandler<T,S> implements CommonBusinessHand
         return null;
     }
 
-    @Override
-    public S execute(T request) {
-        return null;
-    }
+//    @Override
+//    public S execute(T request) {
+//        return null;
+//    }
 
     protected  abstract List<BusinessType> businessTypeList();
 

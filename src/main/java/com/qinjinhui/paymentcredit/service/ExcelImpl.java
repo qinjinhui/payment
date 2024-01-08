@@ -1,9 +1,11 @@
 package com.qinjinhui.paymentcredit.service;
 
 import com.qinjinhui.paymentcredit.utils.AbstractChunkedFileImporter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @Author qinjinhui
@@ -12,6 +14,11 @@ import java.util.List;
  **/
 @Service
 public class ExcelImpl extends AbstractChunkedFileImporter {
+    @Autowired
+    public ExcelImpl(ExecutorService executorService) {
+        super(executorService);
+    }
+
     @Override
     protected void processData(List<String> data) {
         System.out.println("-------------------------------------");
