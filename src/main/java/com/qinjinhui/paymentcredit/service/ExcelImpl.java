@@ -1,6 +1,8 @@
 package com.qinjinhui.paymentcredit.service;
 
 import com.qinjinhui.paymentcredit.utils.AbstractChunkedFileImporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,11 +15,9 @@ import java.util.concurrent.ExecutorService;
  * @Describe
  **/
 @Service
-public class ExcelImpl extends AbstractChunkedFileImporter {
-    @Autowired
-    public ExcelImpl(ExecutorService executorService) {
-        super(executorService);
-    }
+public class ExcelImpl extends AbstractChunkedFileImporter<ExecutorService> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExcelImpl.class);
 
     @Override
     protected void processData(List<String> data) {

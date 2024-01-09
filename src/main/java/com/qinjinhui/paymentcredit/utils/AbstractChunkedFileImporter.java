@@ -3,6 +3,11 @@ package com.qinjinhui.paymentcredit.utils;
 import com.qinjinhui.paymentcredit.iserver.ChunkedFileImporter;
 import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +28,10 @@ import java.util.stream.IntStream;
  * @Describe 抽象类分片导入
  **/
 @Slf4j
-public abstract class AbstractChunkedFileImporter implements ChunkedFileImporter {
+public abstract class AbstractChunkedFileImporter<T extends ExecutorService> implements ChunkedFileImporter {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractChunkedFileImporter.class);
+
     private static final int DEFAULT_SLICE_SIZE = 2;
     private static final int DEFAULT_THREAD_POOL_SIZE = 3;
 
@@ -31,7 +39,7 @@ public abstract class AbstractChunkedFileImporter implements ChunkedFileImporter
 
     private final Lock importFileSliceLock = new ReentrantLock();
 
-    private final ExecutorService executorService;
+    private  ExecutorService executorService;
 
     /**
      * 此接口暂时不用，对子类不暴露调用入口，统一暴露给底层，后续扩展
@@ -41,12 +49,18 @@ public abstract class AbstractChunkedFileImporter implements ChunkedFileImporter
         executeFileImport();
     }
 
-    public AbstractChunkedFileImporter(ExecutorService executorService) {
-        this.executorService = executorService;
+    public AbstractChunkedFileImporter() {
+
+    }
+
+    @Autowired
+    protected void setExecutorService(ThreadPoolTaskExecutor executorService) {
+        this.executorService = executorService.getThreadPoolExecutor();
     }
 
     public void executeFileImport() {
             try {
+                LOGGER.info("开始执行分片流程");
                 FileCheckUtils.checkFileExists(getSourceFilePath());
                 prepareFile();
                 List<Pair<Integer, Integer>> indexRanges = splitIntoIndexRanges();
@@ -54,7 +68,14 @@ public abstract class AbstractChunkedFileImporter implements ChunkedFileImporter
                // CountDownLatch countDownLatch = new CountDownLatch(DEFAULT_THREAD_POOL_SIZE);
 
                 List<CompletableFuture<Void>> futures = indexRanges.stream()
-                        .map(pair -> CompletableFuture.runAsync(() -> processIndex(pair), executorService))
+                        .map(pair -> CompletableFuture.runAsync(() -> {
+                            try {
+                                MDC.setContextMap(MDC.getCopyOfContextMap());
+                                processIndex(pair);
+                            } finally {
+                                MDC.clear();
+                            }
+                        }, executorService))
                         .collect(Collectors.toList());
 
                 CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
@@ -66,16 +87,16 @@ public abstract class AbstractChunkedFileImporter implements ChunkedFileImporter
              //   countDownLatch.await();
                 allOf.join();
             } catch (Exception e) {
-               log.error(e.getMessage());
+                LOGGER.error(e.getMessage());
             }
     }
 
     private void processIndex(Pair<Integer, Integer> pair) {
-        log.info("{} processing {}", Thread.currentThread().getName(), pair);
+        LOGGER.info("{} processing {}", Thread.currentThread().getName(), pair);
         try {
             processDataInRange(pair.getKey(), pair.getValue());
         } catch (IOException e) {
-            log.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
     }
 

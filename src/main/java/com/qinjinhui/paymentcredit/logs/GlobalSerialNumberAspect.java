@@ -14,7 +14,7 @@ import java.util.Random;
 /**
  * @Author qinjinhui
  * @Date 2024/1/5
- * @Describe  日志切面
+ * @Describe 日志切面
  **/
 @Aspect
 @Component
@@ -25,7 +25,7 @@ public class GlobalSerialNumberAspect {
     public void beforeMethodExecution(JoinPoint joinPoint) {
         // 生成并设置全局流水号
         String globalSerialNumber = generateGlobalSerialNumber();
-        MDC.put("全局流水号", "\u5168\u5C40\u6D41\u6C34\u53F7: " +globalSerialNumber);
+        MDC.put("全局流水号", "\u5168\u5C40\u6D41\u6C34\u53F7: " + globalSerialNumber);
         // 将其他字段添加到MDC
         // 日志记录，可选
         LOGGER.info("Setting global serial number: {}", globalSerialNumber);
@@ -35,6 +35,6 @@ public class GlobalSerialNumberAspect {
         // 返回生成的全局流水号字符串
         long milli = Instant.now().toEpochMilli();
         int nextInt = new Random().nextInt(1000);
-        return milli + "-" +nextInt;
+        return milli + "-" + nextInt;
     }
 }
