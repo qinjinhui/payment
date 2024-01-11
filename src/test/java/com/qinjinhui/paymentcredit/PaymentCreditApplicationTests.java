@@ -11,6 +11,8 @@ import com.qinjinhui.paymentcredit.core.baseFrom.BaseFrom;
 import com.qinjinhui.paymentcredit.dao.PayAccount;
 import com.qinjinhui.paymentcredit.entity.Person;
 import com.qinjinhui.paymentcredit.entity.Person1;
+import com.qinjinhui.paymentcredit.factory.CommonBusinessHandler;
+import com.qinjinhui.paymentcredit.login.LoginServiceImpl;
 import com.qinjinhui.paymentcredit.service.ExcelImpl;
 import com.qinjinhui.paymentcredit.service.TestServiceImpl;
 import com.qinjinhui.paymentcredit.utils.ApplicationContextUtil;
@@ -678,6 +680,26 @@ class PaymentCreditApplicationTests {
     public void excelImplTest(){
         ExcelImpl excel = ApplicationContextUtil.getBean(ExcelImpl.class);
         excel.tttt();
+    }
+
+    @Autowired
+    LoginServiceImpl loginService;
+    @Test
+    public void loginAuTest() {
+
+        LoginServiceImpl bean = ApplicationContextUtil.getBean(LoginServiceImpl.class);
+       // bean.test();
+        Map<String, ? extends CommonBusinessHandler> beansOfType = ApplicationContextUtil.getApplicationContext().getBeansOfType(LoginServiceImpl.class);
+        log.info("--------"+beansOfType);
+
+    }
+
+    @Value("${xxx.fafaf:0}")
+    private String fff;
+
+    @Test
+    public void valuesTest() {
+        log.info(fff);
     }
 
 

@@ -4,6 +4,8 @@ import com.alipay.sofa.runtime.api.annotation.SofaAsyncInit;
 import com.ctrip.framework.apollo.spring.annotation.EnableApolloConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
 @SpringBootApplication
 //@EnableEurekaClient//开启erueka客户端

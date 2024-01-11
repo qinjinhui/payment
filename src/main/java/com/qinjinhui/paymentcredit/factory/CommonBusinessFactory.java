@@ -22,7 +22,7 @@ public class CommonBusinessFactory implements BusinessFactory<BusinessType, Comm
 
     @Override
     public void doRegister(BusinessType type, CommonBusinessHandler handler) {
-        BusinessFactory factory = factoryMap.get(type.getFactoryType());
+        BusinessFactory factory =factoryMap.getOrDefault(type.getFactoryType(),new DefaultBusinessFactory());
         factory.doRegister(type, handler);
         factoryMap.put(type.getFactoryType(), factory);
     }
@@ -31,7 +31,7 @@ public class CommonBusinessFactory implements BusinessFactory<BusinessType, Comm
     public <R, S> List<S> doExecute(BusinessType type, R request) {
         BusinessFactory factory = factoryMap.get(type.getFactoryType());
         if (null == factory) {
-
+            //异常
         }
         return factory.doExecute(type, request);
     }
@@ -39,7 +39,7 @@ public class CommonBusinessFactory implements BusinessFactory<BusinessType, Comm
     public static <R, S> S executeSign(BusinessType type, R request) {
         int len = FACTORY.size(type);
         if (len != 1) {
-
+            //异常
         }
         List<S> executeHandleList = FACTORY.doExecute(type, request);
         return executeHandleList.get(0);
@@ -47,7 +47,7 @@ public class CommonBusinessFactory implements BusinessFactory<BusinessType, Comm
 
     @Override
     public int size(BusinessType type) {
-        BusinessFactory factory = factoryMap.get(type.getHandlerType());
+        BusinessFactory factory = factoryMap.get(type.getFactoryType());
         return null == factory ? 0 : factory.size(type);
     }
 

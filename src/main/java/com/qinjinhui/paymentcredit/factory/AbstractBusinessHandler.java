@@ -5,13 +5,16 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.util.CollectionUtils;
-import sun.rmi.runtime.Log;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @Author qinjinhui
@@ -19,42 +22,62 @@ import java.util.Map;
  * @Describe  工厂抽象注册器
  **/
 @Slf4j //此注解后续不使用  底层不使用任何三方插件
-public abstract class AbstractBusinessHandler<T,S> implements CommonBusinessHandler<T,S>, ApplicationContextAware, InitializingBean {
+public abstract class AbstractBusinessHandler<T,S> implements CommonBusinessHandler<T,S>, ApplicationContextAware, InitializingBean, SmartInitializingSingleton, ApplicationListener<ContextRefreshedEvent> {
+
 
     protected  ApplicationContext applicationContext;
 
     @Override
     public Integer order() {
-        return null;
+        return 0;
     }
 
-//    @Override
-//    public S execute(T request) {
-//        return null;
-//    }
 
     protected  abstract List<BusinessType> businessTypeList();
 
     @Override
     public int compareTo(CommonBusinessHandler o) {
-        return 0;
+        return order().compareTo(o.order());
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        businessTypeList().forEach(this::init);
+        log.info("Initializing bean: {}", this.getClass().getSimpleName());
+        log.info("businessTypeList() result: {}", businessTypeList());
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+            businessTypeList().forEach(this::init);
+        });
+        future.join();
     }
-    
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        log.info("Initializing onApplicationEvent: {}");
+    }
+
+    @Override
+    public void afterSingletonsInstantiated() {
+        log.info("Initializing afterSingletonsInstantiated: {}");
+    }
+
+
+
     private void  init(BusinessType type) {
         CommonBusinessHandler proxyObject = getProxyObject();
         CommonBusinessFactory.register(type,proxyObject);
     }
-    
+
+
+
     private CommonBusinessHandler getProxyObject() {
+        String[] beanNames = applicationContext.getBeanDefinitionNames();
+        for (String beanName : beanNames) {
+            log.info(beanName);
+        }
+
         Map<String, ? extends CommonBusinessHandler> beanMap = applicationContext.getBeansOfType(this.getClass());
-        if (CollectionUtils.isEmpty(beanMap)){
-            //抛异常
-            return  null;
+        if (CollectionUtils.isEmpty(beanMap)) {
+            throw new NoSuchBeanDefinitionException(this.getClass());
         }
         if (beanMap.size() == 1) {
             return beanMap.values().iterator().next();
@@ -64,8 +87,9 @@ public abstract class AbstractBusinessHandler<T,S> implements CommonBusinessHand
                 return proxyObj;
             }
         }
-        throw  new NoSuchBeanDefinitionException(this.getClass());
+        throw new NoSuchBeanDefinitionException(this.getClass());
     }
+
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

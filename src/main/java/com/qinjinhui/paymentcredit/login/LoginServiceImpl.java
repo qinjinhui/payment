@@ -1,15 +1,18 @@
 package com.qinjinhui.paymentcredit.login;
 
 import com.qinjinhui.paymentcredit.factory.AbstractLoginFactorBuildHandler;
-import org.springframework.stereotype.Service;
+import com.qinjinhui.paymentcredit.service.ExcelImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @Author qinjinhui
- * @Date 2024/1/8
- * @Describe  密码登录实现类
+ * @Date 2024/1/9
+ * @Describe
  **/
-@Service
-public class PassWordLoginService extends AbstractLoginFactorBuildHandler<PassWordFrom,PassWordResult> {
+@Component
+public class LoginServiceImpl extends AbstractLoginFactorBuildHandler<PassWordFrom,PassWordResult> {
+
     @Override
     public String tradIngCode() {
         return EnumLoginMethod.PASSWORD.getCode();
@@ -19,6 +22,5 @@ public class PassWordLoginService extends AbstractLoginFactorBuildHandler<PassWo
     public PassWordResult businessExecute(PassWordFrom request) {
         return null;
     }
-
 
 }

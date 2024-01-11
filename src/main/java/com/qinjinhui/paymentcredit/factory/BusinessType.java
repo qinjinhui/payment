@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -24,6 +25,9 @@ public class BusinessType {
     }
 
     public static List<BusinessType> build(String factoryType, Object... handlerType) {
-        return Lists.newLinkedList();
+        BusinessType businessType = new BusinessType(factoryType, handlerType[0].toString());
+        LinkedList<BusinessType> businessTypeList = Lists.newLinkedList();
+        businessTypeList.add(businessType);
+        return businessTypeList;
     }
 }

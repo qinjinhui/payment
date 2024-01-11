@@ -50,7 +50,6 @@ public abstract class AbstractChunkedFileImporter1 implements ChunkedFileImporte
         executeFileImport();
     }
 
-    @Async
     public void executeFileImport() {
             try {
                 FileCheckUtils.checkFileExists(getSourceFilePath());

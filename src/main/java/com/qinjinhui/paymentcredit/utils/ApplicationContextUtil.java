@@ -21,7 +21,6 @@ import java.util.Optional;
 @Slf4j
 public class ApplicationContextUtil implements ApplicationContextAware {
 
-    @Autowired
     private  static   ApplicationContext context;
 
     /**

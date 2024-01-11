@@ -9,6 +9,7 @@ import java.util.List;
  **/
 public abstract class AbstractLoginFactorBuildHandler<T,S> extends AbstractBusinessHandler<T,S> implements BusinessExecute<T,S>  {
 
+
     @Override
     protected List<BusinessType> businessTypeList() {
         return BusinessType.build(EnumFactoryType.STANDARD_LOGIN.getCode(), new Object[]{this.tradIngCode()});
